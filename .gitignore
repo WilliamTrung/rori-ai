@@ -1,0 +1,10 @@
+node_modules/
+artifacts/
+**/bin/
+**/obj/
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+.DS_Store

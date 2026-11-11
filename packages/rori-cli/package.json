@@ -1,0 +1,26 @@
+{
+  "name": "rori-cli",
+  "version": "1.0.0",
+  "description": "Rori AI — Command Code CLI entrypoint (use rori instead of cmdc)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WilliamTrung/rori-ai.git",
+    "directory": "packages/rori-cli"
+  },
+  "homepage": "https://github.com/WilliamTrung/rori-ai",
+  "bugs": {
+    "url": "https://github.com/WilliamTrung/rori-ai/issues"
+  },
+  "keywords": ["rori", "command-code", "byok", "llm-adaptor", "gemini"],
+  "bin": {
+    "rori": "bin/rori.mjs"
+  },
+  "files": ["bin", "README.md"],
+  "dependencies": {
+    "command-code": ">=1.88.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
