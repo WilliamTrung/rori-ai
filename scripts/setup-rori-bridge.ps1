@@ -5,7 +5,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-if (-not $BaseUrl) { throw "Set LLM_BRIDGE_BASE_URL (e.g. http://100.79.204.29:5080/v1)" }
+if (-not $BaseUrl) {
+    $BaseUrl = & (Join-Path $PSScriptRoot 'Get-RoriBridgeUrl.ps1')
+}
 if (-not $ApiKey) { throw "Set LLM_PLATFORM_OPENAI_API_KEY (same as MSI api.env)" }
 
 $base = $BaseUrl.TrimEnd('/')

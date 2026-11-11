@@ -60,7 +60,7 @@ function getConfig() {
     (cfg.get("bridgeUrl") || "").trim() ||
     (process.env.LLM_BRIDGE_BASE_URL || "").trim() ||
     readProvidersBridge() ||
-    "http://100.79.204.29:5080/v1";
+    "https://llm.williamthanhtrung.id.vn/v1";
   return {
     bridgeUrl,
     apiKey: resolveApiKey(cfg),

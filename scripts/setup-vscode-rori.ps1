@@ -1,7 +1,7 @@
 ﻿# Simplest Rori in Cursor/VS Code: install extension + set API key (llm-adaptor MSI).
 param(
     [string]$ApiKey = $env:LLM_PLATFORM_OPENAI_API_KEY,
-    [string]$BridgeUrl = "http://100.79.204.29:5080/v1"
+    [string]$BridgeUrl = ""
 )
 
 $ErrorActionPreference = 'Stop'
@@ -11,6 +11,7 @@ if (-not $ApiKey) {
 if (-not $ApiKey) { throw "API key required" }
 
 $repo = Split-Path $PSScriptRoot -Parent
+$BridgeUrl = & (Join-Path $PSScriptRoot 'Get-RoriBridgeUrl.ps1') -BridgeUrl $BridgeUrl
 $extDir = Join-Path $repo 'vscode-extension\rori-ai'
 $ver = (Get-Content (Join-Path $extDir 'package.json') -Raw | ConvertFrom-Json).version
 

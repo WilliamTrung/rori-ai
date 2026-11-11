@@ -2,7 +2,7 @@
   "name": "rori-ai",
   "displayName": "Rori AI",
   "description": "Embedded Rori agent — llm-adaptor BYOK (API key only), Claude Code–style sidebar",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "WilliamTrung",
   "license": "MIT",
   "repository": {
@@ -61,8 +61,8 @@
       "properties": {
         "rori-ai.bridgeUrl": {
           "type": "string",
-          "default": "http://100.79.204.29:5080/v1",
-          "description": "llm-adaptor OpenAI-compatible base URL (…/v1)"
+          "default": "https://llm.williamthanhtrung.id.vn/v1",
+          "description": "Public llm-adaptor OpenAI-compatible base URL (…/v1)"
         },
         "rori-ai.apiKey": {
           "type": "string",

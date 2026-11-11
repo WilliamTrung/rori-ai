@@ -4,13 +4,13 @@
 
 | Variable | Purpose |
 |----------|---------|
-| **`LLM_BRIDGE_BASE_URL`** | e.g. `http://100.79.204.29:5080/v1` (MSI Tailscale) |
+| **`LLM_BRIDGE_BASE_URL`** | `https://llm.williamthanhtrung.id.vn/v1` (public; see `config/bridge-public.json`) |
 | **`LLM_PLATFORM_OPENAI_API_KEY`** | Bearer from llm-adaptor `api.env` |
 
 Setup:
 
 ```powershell
-$env:LLM_BRIDGE_BASE_URL = "http://100.79.204.29:5080/v1"
+$env:LLM_BRIDGE_BASE_URL = "https://llm.williamthanhtrung.id.vn/v1"
 $env:LLM_PLATFORM_OPENAI_API_KEY = "<msi key>"
 powershell -NoProfile -File .\scripts\setup-rori-bridge.ps1
 ```

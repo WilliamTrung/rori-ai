@@ -1,0 +1,4 @@
+{
+  "bridgeUrl": "https://llm.williamthanhtrung.id.vn/v1",
+  "note": "Public HTTPS front for llm-adaptor on MSI (not Tailscale IP). Override with -BridgeUrl or LLM_BRIDGE_BASE_URL."
+}

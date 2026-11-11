@@ -2,7 +2,7 @@
   "provider": {
     "rori": {
       "name": "Rori AI",
-      "baseURL": "http://100.79.204.29:5080/v1",
+      "baseURL": "https://llm.williamthanhtrung.id.vn/v1",
       "apiKey": "$LLM_PLATFORM_OPENAI_API_KEY",
       "models": {
         "gemini-web": {
