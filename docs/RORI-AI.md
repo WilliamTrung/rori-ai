@@ -1,28 +1,30 @@
 # Rori AI (Command Code BYOK)
 
-**Rori** is the CLI (`rori` npm package). Same engine as [Command Code](https://commandcode.ai/). Point BYOK `providers.json` at any OpenAI-compatible **`/v1`** API — commonly **[llm-adaptor](https://github.com/WilliamTrung/llm-adaptor)** Gemini Web.
+**Rori** uses **only your llm-adaptor host + API key** for model traffic when `localOnly` is set:
 
-## Install
+| Variable | Purpose |
+|----------|---------|
+| **`LLM_BRIDGE_BASE_URL`** | e.g. `http://100.79.204.29:5080/v1` (MSI Tailscale) |
+| **`LLM_PLATFORM_OPENAI_API_KEY`** | Bearer from llm-adaptor `api.env` |
 
-- **Windows:** [GitHub Releases](https://github.com/WilliamTrung/rori-ai/releases) → `RoriSetup-*-win-x64.exe`
-- **Source:** `scripts/install-rori-cli.ps1`
-
-## Bridge (BYOK)
-
-**Windows:** `%USERPROFILE%\.commandcode\providers.json`
+Setup:
 
 ```powershell
-$env:LLM_BRIDGE_BASE_URL = "https://your-host:5080/v1"
-$env:LLM_PLATFORM_OPENAI_API_KEY = "<bridge bearer key>"
+$env:LLM_BRIDGE_BASE_URL = "http://100.79.204.29:5080/v1"
+$env:LLM_PLATFORM_OPENAI_API_KEY = "<msi key>"
 powershell -NoProfile -File .\scripts\setup-rori-bridge.ps1
 ```
 
-Sample: **[examples/rori.providers.fragment.json](../examples/rori.providers.fragment.json)**
+**No `rori login`** and **no `COMMAND_CODE_API_KEY`** for BYOK headless agent (`-p`). That path uses **`rori-bridge-agent`** (tools via bridge + local disk).
 
-| CLI model | `rori/gemini-web` |
-| Provider id in JSON | `rori` |
-| Model key in JSON | `gemini-web` |
+Interactive TUI still uses Command Code if you omit `-p` — optional **`rori login`** only for CC cloud features, not for MSI Gemini.
 
-Use **`rori --local-only -m rori/gemini-web`**. Do **not** use **`rori login`** for BYOK-only (that is Command Code cloud billing).
+```powershell
+rori --local-only --list-models
+rori --local-only -m rori/gemini-web
+rori --local-only -p "your task" -m rori/gemini-web --max-turns 20 --add-dir .
+```
 
-See also **[installer/windows/README.md](../installer/windows/README.md)**.
+Sample providers: **[examples/rori.providers.fragment.json](../examples/rori.providers.fragment.json)**
+
+Server: **[llm-adaptor](https://github.com/WilliamTrung/llm-adaptor)** — model id **`rori/gemini-web`**.

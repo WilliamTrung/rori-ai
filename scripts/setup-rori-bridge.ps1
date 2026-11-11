@@ -42,6 +42,5 @@ $configJson = '{"localOnly":true}'
 [Environment]::SetEnvironmentVariable('LLM_PLATFORM_OPENAI_API_KEY', $ApiKey, 'User')
 Write-Host "Rori AI: wrote $providersPath and $configPath (localOnly)"
 Write-Host "Model: rori/gemini-web  (like ollama/qwen2.5-coder:7b — no Command Code subscription for the model)"
-Write-Host "Do NOT run rori login for BYOK — that is Command Code cloud billing."
-Write-Host "  rori --local-only -m rori/gemini-web"
-Write-Host "Headless -p still requires rori login on some CC versions; prefer interactive --local-only."
+Write-Host "Auth: LLM_PLATFORM_OPENAI_API_KEY only (llm-adaptor MSI). No rori login for -p with --local-only."
+Write-Host "  rori --local-only -p `"task`" -m rori/gemini-web --add-dir ."

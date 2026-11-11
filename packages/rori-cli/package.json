@@ -1,7 +1,7 @@
 {
   "name": "rori-cli",
-  "version": "1.0.0",
-  "description": "Rori AI — Command Code CLI entrypoint (use rori instead of cmdc)",
+  "version": "1.0.1",
+  "description": "Rori AI — BYOK llm-adaptor agent (API key only) + Command Code TUI",
   "license": "MIT",
   "repository": {
     "type": "git",
