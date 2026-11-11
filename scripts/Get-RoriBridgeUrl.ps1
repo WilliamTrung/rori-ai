@@ -9,4 +9,4 @@ if (Test-Path $cfg) {
     $j = Get-Content $cfg -Raw | ConvertFrom-Json
     if ($j.bridgeUrl) { return $j.bridgeUrl.TrimEnd('/') }
 }
-return 'https://llm.williamthanhtrung.id.vn/v1'
+return 'https://agent.williamthanhtrung.id.vn/v1'

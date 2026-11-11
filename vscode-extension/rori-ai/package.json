@@ -61,7 +61,7 @@
       "properties": {
         "rori-ai.bridgeUrl": {
           "type": "string",
-          "default": "https://llm.williamthanhtrung.id.vn/v1",
+          "default": "https://agent.williamthanhtrung.id.vn/v1",
           "description": "Public llm-adaptor OpenAI-compatible base URL (…/v1)"
         },
         "rori-ai.apiKey": {

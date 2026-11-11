@@ -28,7 +28,7 @@ function loadBridge() {
   if (!key) throw new Error("LLM_PLATFORM_OPENAI_API_KEY required");
   let base =
     process.env.LLM_BRIDGE_BASE_URL?.trim() ||
-    "https://llm.williamthanhtrung.id.vn/v1";
+    "https://agent.williamthanhtrung.id.vn/v1";
   const providersPath = path.join(os.homedir(), ".commandcode", "providers.json");
   if (fs.existsSync(providersPath)) {
     const p = JSON.parse(fs.readFileSync(providersPath, "utf8"));
