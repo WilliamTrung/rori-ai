@@ -51,6 +51,10 @@ npm i -g https://github.com/WilliamTrung/rori-ai.git#main:packages/rori-cli
 
 Host **llm-adaptor** separately for Gemini Web `/v1` — **[llm-adaptor](https://github.com/WilliamTrung/llm-adaptor)**.
 
+## CI releases
+
+Tag `rori-v1.0.0` to build installers via GitHub Actions. If the workflow file is not on `main` yet, run `gh auth refresh -h github.com -s workflow`, then commit and push `.github/workflows/release-rori-installer.yml`.
+
 ## License
 
 MIT
