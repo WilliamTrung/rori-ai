@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${cspSource}; script-src 'nonce-${nonce}';" />
+  <link rel="stylesheet" href="${styleUri}" />
+</head>
+<body>
+  <p class="hint">BYOK → llm-adaptor (MSI). Set <code>rori-ai.apiKey</code> in settings. Agent with file tools: “Run agent in terminal”.</p>
+  <div id="messages"></div>
+  <textarea id="input" placeholder="Ask Rori… (Enter to send)"></textarea>
+  <div class="row">
+    <button id="send">Send</button>
+    <button id="agent" class="secondary">Run agent in terminal</button>
+  </div>
+  <div id="status"></div>
+  <script nonce="${nonce}" src="${scriptUri}"></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+{
+  "name": "rori-ai",
+  "displayName": "Rori AI",
+  "description": "Embedded Rori agent — llm-adaptor BYOK (API key only), Claude Code–style sidebar",
+  "version": "0.1.0",
+  "publisher": "WilliamTrung",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WilliamTrung/rori-ai",
+    "directory": "vscode-extension/rori-ai"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other", "Machine Learning"],
+  "activationEvents": ["onView:rori-ai.chatView", "onCommand:rori-ai.openChat"],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "rori-ai",
+          "title": "Rori AI",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "rori-ai": [
+        {
+          "type": "webview",
+          "id": "rori-ai.chatView",
+          "name": "Chat"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "rori-ai.openChat",
+        "title": "Rori AI: Open Chat"
+      },
+      {
+        "command": "rori-ai.runAgentTerminal",
+        "title": "Rori AI: Run Agent in Terminal"
+      },
+      {
+        "command": "rori-ai.setupIde",
+        "title": "Rori AI: Install Command Code IDE Extension (optional)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "rori-ai.openChat",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r"
+      }
+    ],
+    "configuration": {
+      "title": "Rori AI",
+      "properties": {
+        "rori-ai.bridgeUrl": {
+          "type": "string",
+          "default": "http://100.79.204.29:5080/v1",
+          "description": "llm-adaptor OpenAI-compatible base URL (…/v1)"
+        },
+        "rori-ai.apiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Bearer key for llm-adaptor. Leave empty to use env `LLM_PLATFORM_OPENAI_API_KEY` in integrated terminal only for CLI; chat requires this setting."
+        },
+        "rori-ai.model": {
+          "type": "string",
+          "default": "rori/gemini-web"
+        }
+      }
+    }
+  }
+}
