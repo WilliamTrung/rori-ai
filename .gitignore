@@ -1,6 +1,6 @@
 node_modules/
 artifacts/
-**/bin/
+installer/**/bin/
 **/obj/
 .env
 .env.*
