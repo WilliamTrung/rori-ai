@@ -2,7 +2,7 @@
   "name": "rori-ai",
   "displayName": "Rori AI",
   "description": "Embedded Rori agent — llm-adaptor BYOK (API key only), Claude Code–style sidebar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "WilliamTrung",
   "license": "MIT",
   "repository": {
@@ -67,7 +67,7 @@
         "rori-ai.apiKey": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Bearer key for llm-adaptor. Leave empty to use env `LLM_PLATFORM_OPENAI_API_KEY` in integrated terminal only for CLI; chat requires this setting."
+          "markdownDescription": "Bearer key from llm-adaptor `api.env`. Optional if `LLM_PLATFORM_OPENAI_API_KEY` is set in your user environment."
         },
         "rori-ai.model": {
           "type": "string",

@@ -31,11 +31,39 @@ async function bridgeChat(base, key, model, messages) {
   return body.choices?.[0]?.message?.content ?? "";
 }
 
+function readProvidersBridge() {
+  try {
+    const p = path.join(
+      process.env.USERPROFILE || process.env.HOME || "",
+      ".commandcode",
+      "providers.json"
+    );
+    if (p && fs.existsSync(p)) {
+      const base = JSON.parse(fs.readFileSync(p, "utf8"))?.provider?.rori?.baseURL;
+      if (base) return base;
+    }
+  } catch {
+    /* ignore */
+  }
+  return "";
+}
+
+function resolveApiKey(cfg) {
+  const fromSetting = (cfg.get("apiKey") || "").trim();
+  if (fromSetting) return fromSetting;
+  return (process.env.LLM_PLATFORM_OPENAI_API_KEY || "").trim();
+}
+
 function getConfig() {
   const cfg = vscode.workspace.getConfiguration("rori-ai");
+  const bridgeUrl =
+    (cfg.get("bridgeUrl") || "").trim() ||
+    (process.env.LLM_BRIDGE_BASE_URL || "").trim() ||
+    readProvidersBridge() ||
+    "http://100.79.204.29:5080/v1";
   return {
-    bridgeUrl: cfg.get("bridgeUrl") || "http://100.79.204.29:5080/v1",
-    apiKey: (cfg.get("apiKey") || "").trim(),
+    bridgeUrl,
+    apiKey: resolveApiKey(cfg),
     model: cfg.get("model") || "rori/gemini-web",
   };
 }
@@ -84,7 +112,7 @@ class RoriChatViewProvider {
       if (!apiKey) {
         webviewView.webview.postMessage({
           type: "error",
-          text: "Set rori-ai.apiKey (llm-adaptor MSI key) in Settings.",
+          text: 'Set rori-ai.apiKey in Settings, or run: setup-vscode-rori.ps1 -ApiKey "<key>"',
         });
         return;
       }

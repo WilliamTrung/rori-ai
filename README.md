@@ -1,8 +1,18 @@
 # Rori AI
 
-Public **Windows installer** and **`rori` CLI** for [Command Code](https://commandcode.ai/) BYOK → any OpenAI-compatible **`/v1`** server (built for [llm-adaptor](https://github.com/WilliamTrung/llm-adaptor) Gemini Web, works like Ollama `providers.json`).
+Client for **[llm-adaptor](https://github.com/WilliamTrung/llm-adaptor)** (Gemini Web on MSI) — **API key only**, no subscription.
 
-## Download
+## Simplest (Cursor / VS Code)
+
+```powershell
+git clone https://github.com/WilliamTrung/rori-ai.git
+cd rori-ai
+powershell -File .\scripts\setup-vscode-rori.ps1 -ApiKey "<from llm-adaptor api.env>"
+```
+
+Reload window → **Rori AI** sidebar. Details: **[docs/VSCODE.md](docs/VSCODE.md)**.
+
+## Download (Windows CLI installer)
 
 **[Releases](https://github.com/WilliamTrung/rori-ai/releases)** — tag `rori-v*`
 

@@ -1,34 +1,31 @@
-# Rori in VS Code / Cursor
+# Rori in VS Code / Cursor (simplest)
 
-## Rori sidebar (BYOK — API key only)
+Uses **[llm-adaptor](https://github.com/WilliamTrung/llm-adaptor)** on MSI — **only your API key** (no Command Code login).
 
-Claude Code–style **activity bar** chat wired to **llm-adaptor** on MSI.
+## 1. One command
 
 ```powershell
-$env:LLM_BRIDGE_BASE_URL = "http://100.79.204.29:5080/v1"
-$env:LLM_PLATFORM_OPENAI_API_KEY = "<msi key>"
-powershell -NoProfile -File .\scripts\setup-vscode-rori.ps1
+git clone https://github.com/WilliamTrung/rori-ai.git
+cd rori-ai
+powershell -NoProfile -File .\scripts\setup-vscode-rori.ps1 -ApiKey "<LLM_PLATFORM_OPENAI_API_KEY>"
 ```
 
-Then **Developer: Reload Window** → **Rori AI** in the activity bar (or **Ctrl+Shift+R**).
+Bridge URL default: `http://100.79.204.29:5080/v1` (override with `-BridgeUrl`).
 
-Settings (`rori-ai.*`):
+## 2. Reload editor
 
-| Setting | Meaning |
-|---------|---------|
-| `rori-ai.bridgeUrl` | `…/v1` on MSI |
-| `rori-ai.apiKey` | `LLM_PLATFORM_OPENAI_API_KEY` |
+**Developer: Reload Window** → open **Rori AI** in the activity bar (**Ctrl+Shift+R**).
+
+## Settings (optional)
+
+| Key | Default |
+|-----|---------|
+| `rori-ai.apiKey` | set by setup script |
+| `rori-ai.bridgeUrl` | MSI `/v1` |
 | `rori-ai.model` | `rori/gemini-web` |
 
-**Run agent in terminal** uses `rori --local-only -p` (bridge agent, file tools) in the integrated terminal.
+You can set only the API key in **Settings → Rori AI** if the extension is already installed.
 
-## Optional: Command Code extension (full CC UI)
+## Agent with file tools
 
-Same pattern as upstream docs: sidebar sessions + IDE context sync (may need CC account for some features).
-
-```powershell
-cursor --install-extension CommandCode.commandcode-vscode
-rori --ide-setup
-```
-
-Launch **`rori --local-only -m rori/gemini-web`** from the IDE terminal for `IDE ✓` context. BYOK model traffic still uses MSI + your API key.
+Button **Run agent in terminal** needs global `rori` CLI (`scripts/install-rori-cli.ps1`). Chat in the sidebar does **not** need the CLI.
