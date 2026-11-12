@@ -5,15 +5,75 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${cspSource}; script-src 'nonce-${nonce}';" />
   <link rel="stylesheet" href="${styleUri}" />
 </head>
-<body>
-  <p class="hint">llm-adaptor (MSI). API key in Settings → Rori AI.</p>
-  <div id="messages"></div>
-  <textarea id="input" placeholder="Ask Rori… (Enter to send)"></textarea>
-  <div class="row">
-    <button id="send">Send</button>
-    <button id="agent" class="secondary">Run agent in terminal</button>
-  </div>
-  <div id="status"></div>
+<body class="${layoutClass}">
+  <header class="header">
+    <div class="header-brand">
+      <span class="header-title">Rori</span>
+      <span id="bridgeHint" class="header-sub">${bridgeHint}</span>
+    </div>
+    <select id="modelSelect" class="model-select" aria-label="Model" title="llm-adaptor model"></select>
+    <div class="mode-bar" role="tablist" aria-label="Mode">
+      <button type="button" class="mode-btn" data-mode="ask" role="tab">Ask</button>
+      <button type="button" class="mode-btn" data-mode="agent" role="tab">Agent</button>
+      <button type="button" class="mode-btn" data-mode="plan" role="tab">Plan</button>
+    </div>
+    <div class="header-actions">
+      <button type="button" id="settingsBtn" class="icon-btn" title="Provider settings (bridge + API key)">⚙</button>
+      <button type="button" id="cliBtn" class="icon-btn" title="Run in terminal (rori)">⌘</button>
+    </div>
+  </header>
+  <aside id="providerPanel" class="provider-panel" hidden aria-label="Rori provider">
+    <div class="provider-backdrop" id="providerBackdrop" aria-hidden="true"></div>
+    <div class="provider-card" role="dialog" aria-modal="true" aria-labelledby="providerTitle">
+      <div class="provider-head">
+        <h2 id="providerTitle">Config</h2>
+        <p class="provider-lead">All <code>rori-ai.*</code> keys as JSON (including <code>apiKey</code>). Saves to user settings + extension state.</p>
+        <button type="button" id="providerClose" class="icon-btn" title="Close">×</button>
+      </div>
+      <label class="provider-field provider-json-field">
+        <span>rori-ai settings</span>
+        <textarea id="cfgJson" class="cfg-json" spellcheck="false" rows="16" aria-label="Rori JSON config"></textarea>
+      </label>
+      <p id="cfgStatus" class="provider-status" role="status"></p>
+      <div class="provider-actions">
+        <button type="button" id="cfgTest" class="btn secondary">Test connection</button>
+        <button type="button" id="cfgVscode" class="btn secondary">All settings…</button>
+        <button type="button" id="cfgSave" class="btn primary">Save</button>
+      </div>
+    </div>
+  </aside>
+  <aside id="rawPanel" class="provider-panel raw-panel" hidden aria-label="Raw bridge response">
+    <div class="provider-backdrop" id="rawBackdrop" aria-hidden="true"></div>
+    <div class="provider-card raw-card" role="dialog" aria-modal="true" aria-labelledby="rawTitle">
+      <div class="provider-head">
+        <h2 id="rawTitle">Raw response</h2>
+        <p class="provider-lead">Unparsed body from llm-adaptor for this turn.</p>
+        <button type="button" id="rawClose" class="icon-btn" title="Close">×</button>
+      </div>
+      <pre id="rawContent" class="raw-content" spellcheck="false"></pre>
+      <div class="provider-actions">
+        <button type="button" id="rawCopy" class="btn secondary">Copy</button>
+        <button type="button" id="rawCloseBtn" class="btn primary">Close</button>
+      </div>
+    </div>
+  </aside>
+  <main id="scroll" class="scroll" data-drop-zone="1">
+    <div id="empty" class="empty">
+      <p class="empty-lead">What should we do in this workspace?</p>
+      <p id="emptyHint" class="empty-hint">Ask · Agent · Plan · Drop files here (Shift+drag from Explorer)</p>
+    </div>
+    <div id="messages"></div>
+  </main>
+  <footer class="footer" data-drop-zone="1">
+    <div id="attachPreview" class="attach-preview" hidden></div>
+    <div class="composer">
+      <button type="button" id="attachBtn" class="attach" title="Add files · Shift+drag from Explorer · right-click +: current file" aria-label="Add files">+</button>
+      <textarea id="input" rows="1" placeholder="Message…"></textarea>
+      <button type="button" id="send" class="send" title="Send (Ctrl+Enter)" aria-label="Send">↑</button>
+    </div>
+    <div id="status" class="status" aria-live="polite"></div>
+  </footer>
+  <script nonce="${nonce}">window.__roriInit = { mode: "${defaultMode}", includeContext: ${includeContextJs} };</script>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>

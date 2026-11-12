@@ -8,7 +8,19 @@ import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const argv = process.argv.slice(2);
+/** @param {string[]} args */
+function expandSimpleArgv(args) {
+  const hasFlags = args.some((a) => a.startsWith("-"));
+  if (hasFlags) return args;
+  const cwd = process.cwd();
+  if (args.length === 0) {
+    return ["--local-only", "-p", "Help with this workspace", "--add-dir", cwd];
+  }
+  const prompt = args.join(" ");
+  return ["--local-only", "-p", prompt, "--add-dir", cwd];
+}
+
+const argv = expandSimpleArgv(process.argv.slice(2));
 
 function hasLocalOnly() {
   if (argv.includes("--local-only")) return true;

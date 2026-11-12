@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 /**
- * Headless agent: llm-adaptor /v1 + LLM_PLATFORM_OPENAI_API_KEY only.
- * Local tools: read_file, write_file, list_dir (JSON blocks in model output).
+ * Headless agent: llm-adaptor /v1 + API key. Model proposes shell; host executes.
  */
+import { createRequire } from "node:module";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const require = createRequire(import.meta.url);
+const { extractCommands, buildAgentSystem, workspaceSnapshot, runShell } = require(
+  path.join(path.dirname(fileURLToPath(import.meta.url)), "shell-agent.cjs")
+);
 
 const argv = process.argv.slice(2);
 
@@ -19,10 +25,6 @@ function arg(name, short) {
   return null;
 }
 
-function flag(name, short) {
-  return argv.includes(name) || (short && argv.includes(short));
-}
-
 function loadBridge() {
   const key = process.env.LLM_PLATFORM_OPENAI_API_KEY?.trim();
   if (!key) throw new Error("LLM_PLATFORM_OPENAI_API_KEY required");
@@ -32,8 +34,7 @@ function loadBridge() {
   const providersPath = path.join(os.homedir(), ".commandcode", "providers.json");
   if (fs.existsSync(providersPath)) {
     const p = JSON.parse(fs.readFileSync(providersPath, "utf8"));
-    const rori = p?.provider?.rori;
-    if (rori?.baseURL) base = rori.baseURL;
+    if (p?.provider?.rori?.baseURL) base = p.provider.rori.baseURL;
   }
   base = base.replace(/\/$/, "");
   if (!base.endsWith("/v1")) base += "/v1";
@@ -56,60 +57,6 @@ function parsePrompt() {
   throw new Error("Missing -p prompt");
 }
 
-function insideRoot(file, roots) {
-  const abs = path.resolve(file);
-  return roots.some((r) => abs === r || abs.startsWith(r + path.sep));
-}
-
-function runTool(name, input, roots) {
-  if (name === "read_file") {
-    const fp = path.resolve(input.path);
-    if (!insideRoot(fp, roots)) return { error: "path not allowed" };
-    if (!fs.existsSync(fp)) return { error: "not found" };
-    return { content: fs.readFileSync(fp, "utf8").slice(0, 120000) };
-  }
-  if (name === "write_file") {
-    const fp = path.resolve(input.path);
-    if (!insideRoot(fp, roots)) return { error: "path not allowed" };
-    fs.mkdirSync(path.dirname(fp), { recursive: true });
-    fs.writeFileSync(fp, input.content ?? "", "utf8");
-    return { ok: true, bytes: Buffer.byteLength(input.content ?? "", "utf8") };
-  }
-  if (name === "list_dir") {
-    const dir = path.resolve(input.path || roots[0]);
-    if (!insideRoot(dir, roots)) return { error: "path not allowed" };
-    if (!fs.existsSync(dir)) return { error: "not found" };
-    return { entries: fs.readdirSync(dir) };
-  }
-  return { error: `unknown tool ${name}` };
-}
-
-function extractTools(text) {
-  const out = [];
-  const re = /```json\s*([\s\S]*?)```/gi;
-  let m;
-  while ((m = re.exec(text))) {
-    try {
-      const j = JSON.parse(m[1].trim());
-      if (j.tool) out.push(j);
-    } catch {
-      /* skip */
-    }
-  }
-  const lineRe = /^\s*\{"tool"\s*:/gm;
-  for (const block of text.split("\n")) {
-    if (block.includes('"tool"')) {
-      try {
-        const j = JSON.parse(block.trim());
-        if (j.tool) out.push(j);
-      } catch {
-        /* skip */
-      }
-    }
-  }
-  return out;
-}
-
 async function chat(bridge, model, messages, userId) {
   const res = await fetch(bridge.url, {
     method: "POST",
@@ -124,53 +71,53 @@ async function chat(bridge, model, messages, userId) {
   return body.choices?.[0]?.message?.content ?? "";
 }
 
-const SYSTEM = `You are Rori AI (Gemini Web via llm-adaptor). Execute tasks with tools.
-
-Emit each tool call as a standalone JSON code fence:
-\`\`\`json
-{"tool":"read_file","path":"..."}
-\`\`\`
-\`\`\`json
-{"tool":"write_file","path":"...","content":"..."}
-\`\`\`
-\`\`\`json
-{"tool":"list_dir","path":"..."}
-\`\`\`
-
-After tools run, you receive results as user messages. When done, say DONE briefly.`;
-
 async function main() {
   const bridge = loadBridge();
   const model = arg("--model", "-m") || "rori/gemini-web";
-  const maxTurns = parseInt(arg("--max-turns") || "25", 10);
+  const maxTurns = parseInt(arg("--max-turns") || "0", 10);
+  const turnCap = maxTurns > 0 ? maxTurns : Number.POSITIVE_INFINITY;
   const roots = parseDirs();
   const prompt = parsePrompt();
   const userId = `rori-bridge-${Date.now()}`;
+  const env = {
+    platform: process.platform,
+    shell: process.platform === "win32" ? "powershell" : "bash",
+  };
+  const shellOpts = {
+    shell: env.shell,
+    maxShellOutput: 100000,
+    commandTimeoutMs: 120000,
+  };
+  const cwd = roots[0];
   const messages = [
-    { role: "system", content: SYSTEM },
-    { role: "user", content: prompt },
+    { role: "system", content: buildAgentSystem(roots, env) },
+    {
+      role: "user",
+      content: `${prompt}\n\n${workspaceSnapshot(roots)}`,
+    },
   ];
 
-  for (let turn = 0; turn < maxTurns; turn++) {
+  for (let turn = 0; turn < turnCap; turn++) {
     const text = await chat(bridge, model, messages, userId);
     messages.push({ role: "assistant", content: text });
     process.stdout.write(text + "\n");
 
-    const tools = extractTools(text);
-    if (tools.length === 0) {
+    const commands = extractCommands(text);
+    if (commands.length === 0) {
       if (/DONE/i.test(text)) break;
-      if (turn >= maxTurns - 1) break;
       messages.push({
         role: "user",
-        content: "Continue or finish with write_file. Use tool JSON blocks.",
+        content:
+          "Propose the next shell command in a fenced ```powershell or ```bash block. Use real CLI to inspect/edit files.",
       });
       continue;
     }
-    for (const t of tools) {
-      const result = runTool(t.tool, t, roots);
+    for (const cmd of commands) {
+      process.stderr.write(`$ ${cmd.split("\n")[0]}\n`);
+      const result = runShell(cmd, cwd, shellOpts);
       messages.push({
         role: "user",
-        content: `Tool ${t.tool} result:\n${JSON.stringify(result)}`,
+        content: `Command output (exit ${result.exitCode}):\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
       });
     }
   }

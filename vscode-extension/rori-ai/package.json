@@ -1,8 +1,8 @@
 {
   "name": "rori-ai",
-  "displayName": "Rori AI",
-  "description": "Embedded Rori agent — llm-adaptor BYOK (API key only), Claude Code–style sidebar",
-  "version": "0.1.2",
+  "displayName": "Rori",
+  "description": "Rori — llm-adaptor chat agent in the editor pane (BYOK, API key only)",
+  "version": "0.6.21",
   "publisher": "WilliamTrung",
   "license": "MIT",
   "repository": {
@@ -14,14 +14,25 @@
     "vscode": "^1.85.0"
   },
   "categories": ["Other", "Machine Learning"],
-  "activationEvents": ["onView:rori-ai.chatView", "onCommand:rori-ai.openChat"],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:rori-ai.openChat",
+    "onCommand:rori-ai.openChatSidebar",
+    "onCommand:rori-ai.runAgentTerminal",
+    "onCommand:rori-ai.newChat",
+    "onCommand:rori-ai.configure",
+    "onView:rori-ai.chatView"
+  ],
   "main": "./extension.js",
+  "dependencies": {
+    "ws": "^8.18.3"
+  },
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
           "id": "rori-ai",
-          "title": "Rori AI",
+          "title": "Rori",
           "icon": "media/icon.svg"
         }
       ]
@@ -31,47 +42,186 @@
         {
           "type": "webview",
           "id": "rori-ai.chatView",
-          "name": "Chat"
+          "name": "Rori",
+          "when": "true"
         }
       ]
     },
     "commands": [
       {
         "command": "rori-ai.openChat",
-        "title": "Rori AI: Open Chat"
+        "title": "Rori: Open Chat in Editor",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "rori-ai.openChatSidebar",
+        "title": "Rori: Open Sidebar Chat"
       },
       {
         "command": "rori-ai.runAgentTerminal",
-        "title": "Rori AI: Run Agent in Terminal"
+        "title": "Rori: Run Agent in Terminal"
       },
       {
-        "command": "rori-ai.setupIde",
-        "title": "Rori AI: Install Command Code IDE Extension (optional)"
+        "command": "rori-ai.attachFiles",
+        "title": "Rori: Attach Files to Chat"
+      },
+      {
+        "command": "rori-ai.attachExplorerSelection",
+        "title": "Rori: Attach to Chat"
+      },
+      {
+        "command": "rori-ai.newChat",
+        "title": "Rori: New Chat"
+      },
+      {
+        "command": "rori-ai.configure",
+        "title": "Rori: Configure Provider",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "rori-ai.openSettings",
+        "title": "Rori: Open Extension Settings"
+      },
+      {
+        "command": "rori-ai.showTraceLog",
+        "title": "Rori: Show Trace Log"
       }
     ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "rori-ai.openChat",
+          "group": "navigation",
+          "when": "true"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "rori-ai.attachExplorerSelection",
+          "group": "navigation@99",
+          "when": "explorerResourceIsFolder == false"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "rori-ai.openChat"
+        },
+        {
+          "command": "rori-ai.newChat"
+        },
+        {
+          "command": "rori-ai.configure"
+        },
+        {
+          "command": "rori-ai.openSettings"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "rori-ai.openChat",
         "key": "ctrl+shift+r",
         "mac": "cmd+shift+r"
+      },
+      {
+        "command": "rori-ai.newChat",
+        "key": "ctrl+shift+n",
+        "mac": "cmd+shift+n",
+        "when": "activeWebviewPanelId == roriAiEditorChat"
       }
     ],
     "configuration": {
-      "title": "Rori AI",
+      "title": "Rori",
       "properties": {
         "rori-ai.bridgeUrl": {
           "type": "string",
           "default": "https://agent.williamthanhtrung.id.vn/v1",
-          "description": "Public llm-adaptor OpenAI-compatible base URL (…/v1)"
+          "order": 1,
+          "description": "llm-adaptor OpenAI-compatible base URL (must end with /v1). Also editable via chat ⚙ Provider."
         },
         "rori-ai.apiKey": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Bearer key from llm-adaptor `api.env`. Optional if `LLM_PLATFORM_OPENAI_API_KEY` is set in your user environment."
+          "order": 2,
+          "markdownDescription": "Bearer key (visible in ⚙ JSON config and user `settings.json`). Also mirrored to Secret Storage. Env fallback: `LLM_PLATFORM_OPENAI_API_KEY`."
         },
         "rori-ai.model": {
           "type": "string",
-          "default": "rori/gemini-web"
+          "default": "llm-adaptor/gemini-browser",
+          "order": 3,
+          "markdownDescription": "Fallback model id if `/v1/models` cannot be loaded. Header dropdown overrides (stored in extension state)."
+        },
+        "rori-ai.openChatOnActivate": {
+          "type": "boolean",
+          "default": false,
+          "order": 10,
+          "description": "Open editor chat tab when the extension loads"
+        },
+        "rori-ai.defaultMode": {
+          "type": "string",
+          "enum": ["ask", "agent", "plan"],
+          "default": "agent",
+          "order": 4,
+          "description": "Default chat mode when opening Rori (also in ⚙ Provider)"
+        },
+        "rori-ai.agentMode": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Deprecated — use `rori-ai.defaultMode`. If false, defaults to **ask**."
+        },
+        "rori-ai.maxAgentTurns": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "description": "Agent/Ask shell loop cap per user message. 0 = unlimited (until DONE or host stop). Set e.g. 30 to cap cost."
+        },
+        "rori-ai.shell": {
+          "type": "string",
+          "enum": ["powershell", "pwsh", "cmd", "bash"],
+          "default": "powershell",
+          "markdownDescription": "Shell for agent commands (Windows: `powershell` recommended)"
+        },
+        "rori-ai.maxShellOutput": {
+          "type": "number",
+          "default": 100000,
+          "minimum": 4096
+        },
+        "rori-ai.commandTimeoutMs": {
+          "type": "number",
+          "default": 120000,
+          "minimum": 5000
+        },
+        "rori-ai.bridgeTimeoutMs": {
+          "type": "number",
+          "default": 600000,
+          "minimum": 60000,
+          "description": "Max wait for one bridge /v1/chat/completions call (PDF upload + Gemini can take several minutes)"
+        },
+        "rori-ai.bridgeAttachmentsOnce": {
+          "type": "boolean",
+          "default": true,
+          "description": "Send file bytes only on the first bridge call per chat run (later turns use the same Gemini thread)"
+        },
+        "rori-ai.traceLog": {
+          "type": "boolean",
+          "default": true,
+          "description": "Write bridge/attachment trace lines to Output → Rori"
+        },
+        "rori-ai.maxHistoryMessages": {
+          "type": "number",
+          "default": 14,
+          "minimum": 4,
+          "description": "Max non-system messages sent to bridge per turn (smaller = faster later turns)"
+        },
+        "rori-ai.maxToolOutputInHistory": {
+          "type": "number",
+          "default": 8000,
+          "description": "Truncate shell stdout/stderr stored in agent transcript"
+        },
+        "rori-ai.includeEditorContext": {
+          "type": "boolean",
+          "default": true,
+          "description": "Attach active editor file/selection to each message"
         }
       }
     }
